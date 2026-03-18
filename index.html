@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设计工作台 v1.1</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0eeea;
+    --border: rgba(0,0,0,0.1);
+    --border-md: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text2: #5a5a56;
+    --text3: #9a9994;
+    --green: #1D9E75;
+    --green-bg: #e1f5ee;
+    --green-text: #0f6e56;
+    --blue: #378ADD;
+    --blue-bg: #e6f1fb;
+    --blue-text: #185fa5;
+    --amber: #BA7517;
+    --amber-bg: #faeeda;
+    --amber-text: #854f0b;
+    --purple: #7F77DD;
+    --purple-bg: #eeedfe;
+    --purple-text: #534ab7;
+    --red: #D85A30;
+    --red-bg: #faece7;
+    --red-text: #993c1d;
+    --olive: #639922;
+    --olive-bg: #eaf3de;
+    --olive-text: #3b6d11;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --surface: #252522;
+      --surface2: #2e2e2b;
+      --border: rgba(255,255,255,0.1);
+      --border-md: rgba(255,255,255,0.18);
+      --text: #e8e6e0;
+      --text2: #a8a69e;
+      --text3: #6a6860;
+      --green-bg: #04342c;
+      --green-text: #9fe1cb;
+      --blue-bg: #042c53;
+      --blue-text: #b5d4f4;
+      --amber-bg: #412402;
+      --amber-text: #fac775;
+      --purple-bg: #26215c;
+      --purple-text: #cecbf6;
+      --red-bg: #4a1b0c;
+      --red-text: #f5c4b3;
+      --olive-bg: #173404;
+      --olive-text: #c0dd97;
+    }
+  }
+
+  html { font-size: 15px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  .app { max-width: 720px; margin: 0 auto; }
+
+  /* Header */
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .app-title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .app-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .hdr-btn {
+    padding: 6px 12px;
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text2);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .hdr-btn:hover { background: var(--surface2); color: var(--text); }
+
+  /* Tabs */
+  .tab-bar {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 20px;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 4px;
+  }
+  .tab {
+    flex: 1;
+    padding: 8px 0;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text3);
+    cursor: pointer;
+    border-radius: 7px;
+    transition: all .15s;
+    border: none;
+    background: none;
+  }
+  .tab.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    letter-spacing: 0.1px;
+  }
+
+  /* Tabs content */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ─── NAMING TAB ─── */
+  .rule-parts {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .part-tag {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .connector { font-size: 13px; color: var(--text3); font-weight: 300; }
+
+  .example-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .example-box {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text2);
+    font-family: 'SF Mono', 'Menlo', monospace;
+    line-height: 1.9;
+  }
+
+  .gen-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .gen-field label {
+    display: block;
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .gen-field input, .gen-field select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-sm);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .gen-field input:focus, .gen-field select:focus {
+    border-color: var(--blue);
+    background: var(--surface);
+  }
+
+  .result-section { margin-top: 4px; }
+  .result-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .result-box {
+    flex: 1;
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    font-size: 12px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    color: var(--text);
+    word-break: break-all;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    user-select: all;
+  }
+  .result-box:hover { border-color: var(--border-md); background: var(--surface); }
+
+  .copy-btn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border-md);
+    background: var(--surface2);
+    color: var(--text2);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .copy-btn:hover { background: var(--surface); color: var(--text); }
+  .copy-btn.copied { background: var(--green-bg); color: var(--green-text); border-color: transparent; }
+
+  .export-chips { display: flex; flex-direction: column; gap: 8px; }
+  .export-chip-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+  }
+  .chip {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .chip-red { background: var(--red-bg); color: var(--red-text); }
+  .chip-green { background: var(--green-bg); color: var(--green-text); }
+  .export-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+  /* ─── PROJECTS TAB ─── */
+  .project-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .project-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .project-card:hover { border-color: var(--border-md); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .project-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .project-name { font-size: 14px; font-weight: 600; }
+  .project-meta { display: flex; align-items: center; gap: 10px; }
+  .project-pct { font-size: 12px; font-weight: 600; color: var(--green); }
+  .project-date { font-size: 11px; color: var(--text3); }
+  .del-btn {
+    background: none; border: none; color: var(--text3);
+    font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1;
+    transition: color .15s;
+  }
+  .del-btn:hover { color: var(--red); }
+
+  .progress-bar { height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width .4s ease; }
+
+  .stage-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+  .s-pill { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
+  .s-done { background: var(--green-bg); color: var(--green-text); }
+  .s-active { background: var(--blue-bg); color: var(--blue-text); }
+  .s-todo { background: var(--surface2); color: var(--text3); }
+
+  .add-project-btn {
+    width: 100%;
+    padding: 12px;
+    border: 0.5px dashed var(--border-md);
+    border-radius: var(--radius);
+    background: none;
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    margin-top: 8px;
+  }
+  .add-project-btn:hover { background: var(--surface); color: var(--text); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--text3);
+    font-size: 13px;
+  }
+
+  /* ─── CHECKLIST VIEW ─── */
+  #checklist-view { display: none; }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 16px;
+    transition: color .15s;
+  }
+  .back-btn:hover { color: var(--text); }
+
+  .cl-header { margin-bottom: 18px; }
+  .cl-name { font-size: 16px; font-weight: 600; margin-bottom: 3px; }
+  .cl-sub { font-size: 12px; color: var(--text3); }
+
+  .stage-block {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .stage-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    transition: background .12s;
+  }
+  .stage-hdr:hover { background: var(--surface2); }
+  .stage-left { display: flex; align-items: center; gap: 10px; }
+  .stage-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .stage-lbl { font-size: 14px; font-weight: 600; }
+  .stage-right { display: flex; align-items: center; gap: 8px; }
+  .stage-cnt { font-size: 12px; color: var(--text3); }
+  .chevron {
+    font-size: 13px; color: var(--text3);
+    transition: transform .2s;
+    display: inline-block;
+  }
+  .chevron.open { transform: rotate(90deg); }
+
+  .stage-body { display: none; border-top: 0.5px solid var(--border); }
+  .stage-body.open { display: block; }
+
+  .check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 16px;
+    transition: background .1s;
+  }
+  .check-row:hover { background: var(--surface2); }
+  .check-row input[type=checkbox] {
+    margin-top: 2px;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: var(--green);
+  }
+  .check-texts { flex: 1; }
+  .check-lbl { font-size: 13px; color: var(--text); line-height: 1.5; transition: color .15s; }
+  .check-note { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .check-row.done .check-lbl { color: var(--text3); text-decoration: line-through; }
+
+  .stage-note-area { padding: 8px 16px 12px; border-top: 0.5px solid var(--border); }
+  .stage-note-area textarea {
+    width: 100%;
+    padding: 7px 10px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface2);
+    color: var(--text2);
+    font-size: 12px;
+    font-family: inherit;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .stage-note-area textarea:focus { border-color: var(--blue); background: var(--surface); }
+  .stage-note-area textarea::placeholder { color: var(--text3); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--text);
+    color: var(--surface);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: all .2s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="app-header">
+    <div>
+      <div class="app-title">设计工作台</div>
+      <div class="app-sub">项目跟踪 · 命名规范 · 导出规范 · <span style="color:var(--green)">v1.1</span></div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="hdr-btn" onclick="exportData()" title="导出所有项目数据为 JSON 备份文件">导出备份</button>
+      <button class="hdr-btn" onclick="document.getElementById('importFile').click()" title="从 JSON 备份文件恢复数据">导入恢复</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('projects')">项目跟踪</button>
+    <button class="tab" onclick="switchTab('naming')">命名 & 导出</button>
+  </div>
+
+  <!-- ══ PROJECTS TAB ══ -->
+  <div id="tab-projects" class="tab-content active">
+
+    <div id="project-list-view">
+      <div id="projectList" class="project-list"></div>
+      <button class="add-project-btn" onclick="addProject()">＋ 新建项目</button>
+    </div>
+
+    <div id="checklist-view">
+      <button class="back-btn" onclick="backToList()">← 返回项目列表</button>
+      <div class="cl-header">
+        <div class="cl-name" id="cl-name"></div>
+        <div class="cl-sub" id="cl-sub"></div>
+      </div>
+      <div id="stages-container"></div>
+    </div>
+
+  </div>
+
+  <!-- ══ NAMING TAB ══ -->
+  <div id="tab-naming" class="tab-content">
+
+    <div class="card">
+      <div class="card-title">文件命名规则</div>
+      <div class="rule-parts">
+        <span class="part-tag" style="background:var(--blue-bg);color:var(--blue-text)">项目名称</span>
+        <span class="connector">+</span>
+        <span class="part-tag" style="background:var(--amber-bg);color:var(--amber-text)">物料名称</span>
+        <span class="connector">+</span>
+        <span class="part-tag" style="background:var(--green-bg);color:var(--green-text)">版本</span>
+        <span class="connector">+</span>
+        <span class="part-tag" style="background:var(--surface2);color:var(--text2);border:0.5px solid var(--border)">日期</span>
+        <span class="connector">+</span>
+        <span class="part-tag" style="background:var(--red-bg);color:var(--red-text)">转曲 / 未转曲</span>
+      </div>
+      <div class="example-label">示例</div>
+      <div class="example-box">
+        澳洲JB Chadstone 品牌展陈区 KV 背景板_Final_260318_转曲.pdf<br>
+        澳洲JB Chadstone 品牌展陈区 KV 背景板_Final_260318_未转曲.ai
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">命名生成器</div>
+      <div class="gen-grid">
+        <div class="gen-field" style="grid-column:1/-1">
+          <label>项目名称</label>
+          <input id="g-project" type="text" placeholder="澳洲JB Chadstone 品牌展陈区" oninput="genName()">
+        </div>
+        <div class="gen-field" style="grid-column:1/-1">
+          <label>物料名称</label>
+          <input id="g-material" type="text" placeholder="KV 背景板" oninput="genName()">
+        </div>
+        <div class="gen-field">
+          <label>版本</label>
+          <select id="g-ver" onchange="genName()">
+            <option>Draft</option>
+            <option>V1</option>
+            <option>V2</option>
+            <option>V3</option>
+            <option selected>Final</option>
+            <option>Final_R1</option>
+            <option>Final_R2</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label>日期</label>
+          <input id="g-date" type="text" placeholder="260318" maxlength="8" oninput="genName()">
+        </div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">生成结果</div>
+        <div class="result-row">
+          <div class="result-box" id="r-pdf" title="点击全选" onclick="selectText(this)">—</div>
+          <button class="copy-btn" id="btn-pdf" onclick="copyResult('pdf')">复制 PDF</button>
+        </div>
+        <div class="result-row">
+          <div class="result-box" id="r-ai" title="点击全选" onclick="selectText(this)">—</div>
+          <button class="copy-btn" id="btn-ai" onclick="copyResult('ai')">复制 AI</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">导出规范</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px">
+        Final 文件须同时导出两个版本，分别服务于不同使用场景：
+      </div>
+      <div class="export-chips">
+        <div class="export-chip-row">
+          <span class="chip chip-red">转曲版 PDF</span>
+          <div class="export-desc">可用 AI 打开 · 发给业务方手机 / PC 端查阅 · 发送供应商制版</div>
+        </div>
+        <div class="export-chip-row">
+          <span class="chip chip-green">未转曲 AI 源文件</span>
+          <div class="export-desc">自留备份 · 保留可编辑性 · 后续修改使用</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">设计准出规范（评审阶段）</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.8">
+        文件命名格式：<span style="font-family:'SF Mono',monospace;font-size:12px;background:var(--surface2);padding:2px 6px;border-radius:4px">20260201_Name_打样</span><br>
+        输出文件：同时给 <span style="color:var(--red-text);font-weight:500">PDF 转曲版</span> + <span style="color:var(--green-text);font-weight:500">较低版本 AI 源文件</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── DATA ─── */
+const STAGES = [
+  {
+    id:'analysis', label:'需求分析', color:'#1D9E75',
+    items:[
+      {id:'a1', label:'确认成本上限', note:'材质 + 尺寸'},
+      {id:'a2', label:'确认使用场景', note:'线上/线下、室内/室外'},
+      {id:'a3', label:'确认目标人群', note:''},
+      {id:'a4', label:'明确项目目的', note:'希望达到什么效果、传递什么信息'},
+      {id:'a5', label:'完成任务评估', note:'评估可行性与工作量'},
+    ]
+  },
+  {
+    id:'strategy', label:'策略制定', color:'#378ADD',
+    items:[
+      {id:'s1', label:'完成市场调研', note:'关注材质、工艺、尺寸区别'},
+      {id:'s2', label:'建立风格看板', note:'视觉参考 + 材质参考 + 工艺结构参考'},
+      {id:'s3', label:'完成头脑风暴', note:'产出至少三种设计策略方向'},
+      {id:'s4', label:'内部对齐方向', note:'5min 站会，确认进入哪个策略'},
+    ]
+  },
+  {
+    id:'execution', label:'设计执行', color:'#BA7517',
+    items:[
+      {id:'e1', label:'完成概念设计', note:''},
+      {id:'e2', label:'完成内容完善', note:''},
+      {id:'e3', label:'提案文件标注清晰', note:'材质 + 尺寸 + 工艺'},
+      {id:'e4', label:'附上供应商参考价', note:'如可提供，注明来源'},
+    ]
+  },
+  {
+    id:'review', label:'设计评审', color:'#7F77DD',
+    items:[
+      {id:'r1', label:'DC 内部评审通过', note:'专业完成度、工艺可行性'},
+      {id:'r2', label:'需求方评审确认', note:'内容方向与需求是否吻合'},
+      {id:'r3', label:'文件命名符合规范', note:'格式：项目_物料_版本_日期_转曲状态'},
+      {id:'r4', label:'同时输出 PDF 转曲版', note:''},
+      {id:'r5', label:'保留 AI 源文件（未转曲）', note:''},
+    ]
+  },
+  {
+    id:'production', label:'生产校对', color:'#D85A30',
+    items:[
+      {id:'p1', label:'印前图纸自查', note:'出血、颜色模式、分辨率'},
+      {id:'p2', label:'对接供应商确认', note:''},
+      {id:'p3', label:'打样跟进（第3天主动追问）', note:'不等对方主动反馈'},
+      {id:'p4', label:'打样结果已反馈给需求方', note:''},
+    ]
+  },
+  {
+    id:'acceptance', label:'封样验收', color:'#639922',
+    items:[
+      {id:'f1', label:'签样留存', note:''},
+      {id:'f2', label:'48h 内完成项目复盘', note:'趁细节记忆清晰时记录'},
+      {id:'f3', label:'归档所有文件', note:'按命名规范整理'},
+    ]
+  }
+];
+
+let projects = JSON.parse(localStorage.getItem('dc_wf_projects') || '[]');
+let currentIdx = null;
+let openStages = {};
+
+function save() {
+  localStorage.setItem('dc_wf_projects', JSON.stringify(projects));
+}
+
+/* ─── TOAST ─── */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* ─── TABS ─── */
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['projects','naming'][i]===name));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+/* ─── PROGRESS ─── */
+function getProgress(p) {
+  let total=0, done=0;
+  STAGES.forEach(s => s.items.forEach(item => { total++; if(p.checks?.[item.id]) done++; }));
+  return { total, done, pct: total ? Math.round(done/total*100) : 0 };
+}
+function stageStatus(p, stage) {
+  const done = stage.items.filter(i => p.checks?.[i.id]).length;
+  if (!done) return 'todo';
+  return done === stage.items.length ? 'done' : 'active';
+}
+
+/* ─── PROJECTS LIST ─── */
+function renderProjects() {
+  const list = document.getElementById('projectList');
+  if (!projects.length) {
+    list.innerHTML = '<div class="empty-state">还没有项目，点击下方新建</div>';
+    return;
+  }
+  list.innerHTML = projects.map((p,i) => {
+    const prog = getProgress(p);
+    const pills = STAGES.map(s => {
+      const st = stageStatus(p,s);
+      return `<span class="s-pill s-${st}">${s.label}</span>`;
+    }).join('');
+    return `<div class="project-card" onclick="openProject(${i})">
+      <div class="project-top">
+        <div class="project-name">${escHtml(p.name)}</div>
+        <div class="project-meta">
+          <span class="project-date">${p.date||''}</span>
+          <span class="project-pct">${prog.pct}%</span>
+          <button class="del-btn" title="删除项目" onclick="delProject(event,${i})">×</button>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${prog.pct}%"></div></div>
+      <div class="stage-pills">${pills}</div>
+    </div>`;
+  }).join('');
+}
+
+function addProject() {
+  const name = prompt('项目名称：');
+  if (!name?.trim()) return;
+  const d = new Date();
+  const date = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  projects.push({ name: name.trim(), date, checks:{}, notes:{} });
+  save();
+  renderProjects();
+}
+
+function delProject(e, i) {
+  e.stopPropagation();
+  if (!confirm(`删除项目「${projects[i].name}」？`)) return;
+  projects.splice(i,1);
+  save();
+  renderProjects();
+}
+
+/* ─── CHECKLIST ─── */
+function openProject(i) {
+  currentIdx = i;
+  openStages = {};
+  STAGES.forEach(s => openStages[s.id] = true);
+  document.getElementById('project-list-view').style.display = 'none';
+  document.getElementById('checklist-view').style.display = 'block';
+  renderChecklist();
+}
+
+function backToList() {
+  document.getElementById('checklist-view').style.display = 'none';
+  document.getElementById('project-list-view').style.display = 'block';
+  renderProjects();
+}
+
+function renderChecklist() {
+  const p = projects[currentIdx];
+  const prog = getProgress(p);
+  document.getElementById('cl-name').textContent = p.name;
+  document.getElementById('cl-sub').textContent = `已完成 ${prog.done} / ${prog.total} 项 · ${prog.pct}%`;
+
+  document.getElementById('stages-container').innerHTML = STAGES.map(s => {
+    const doneCnt = s.items.filter(i => p.checks?.[i.id]).length;
+    const isOpen = openStages[s.id];
+    const note = p.notes?.[s.id] || '';
+    const items = s.items.map(item => {
+      const checked = !!p.checks?.[item.id];
+      return `<div class="check-row${checked?' done':''}" id="cr-${item.id}">
+        <input type="checkbox" ${checked?'checked':''} onchange="toggle('${item.id}',this.checked)">
+        <div class="check-texts">
+          <div class="check-lbl">${escHtml(item.label)}</div>
+          ${item.note?`<div class="check-note">${escHtml(item.note)}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="stage-block">
+      <div class="stage-hdr" onclick="toggleStage('${s.id}')">
+        <div class="stage-left">
+          <div class="stage-dot" style="background:${s.color}"></div>
+          <div class="stage-lbl">${s.label}</div>
+        </div>
+        <div class="stage-right">
+          <span class="stage-cnt">${doneCnt}/${s.items.length}</span>
+          <span class="chevron${isOpen?' open':''}">›</span>
+        </div>
+      </div>
+      <div class="stage-body${isOpen?' open':''}">
+        ${items}
+        <div class="stage-note-area">
+          <textarea rows="2" placeholder="备注（阶段记录、注意事项…）" oninput="saveNote('${s.id}',this.value)">${escHtml(note)}</textarea>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleStage(id) {
+  openStages[id] = !openStages[id];
+  const body = document.querySelector(`#stages-container .stage-block:nth-child(${STAGES.findIndex(s=>s.id===id)+1}) .stage-body`);
+  const chev = document.querySelector(`#stages-container .stage-block:nth-child(${STAGES.findIndex(s=>s.id===id)+1}) .chevron`);
+  body?.classList.toggle('open', openStages[id]);
+  chev?.classList.toggle('open', openStages[id]);
+}
+
+function toggle(itemId, checked) {
+  const p = projects[currentIdx];
+  if (!p.checks) p.checks = {};
+  p.checks[itemId] = checked;
+  save();
+  const row = document.getElementById('cr-'+itemId);
+  row?.classList.toggle('done', checked);
+  const prog = getProgress(p);
+  document.getElementById('cl-sub').textContent = `已完成 ${prog.done} / ${prog.total} 项 · ${prog.pct}%`;
+  STAGES.forEach((s,si) => {
+    const cnt = s.items.filter(i => p.checks?.[i.id]).length;
+    const el = document.querySelector(`#stages-container .stage-block:nth-child(${si+1}) .stage-cnt`);
+    if (el) el.textContent = `${cnt}/${s.items.length}`;
+  });
+}
+
+function saveNote(stageId, val) {
+  const p = projects[currentIdx];
+  if (!p.notes) p.notes = {};
+  p.notes[stageId] = val;
+  save();
+}
+
+/* ─── NAMING ─── */
+function todayStr() {
+  const d = new Date();
+  return String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+}
+
+function genName() {
+  const proj = document.getElementById('g-project').value.trim() || '项目名称';
+  const mat  = document.getElementById('g-material').value.trim() || '物料名称';
+  const ver  = document.getElementById('g-ver').value;
+  const date = document.getElementById('g-date').value.trim() || todayStr();
+  document.getElementById('r-pdf').textContent = `${proj} ${mat}_${ver}_${date}_转曲.pdf`;
+  document.getElementById('r-ai').textContent  = `${proj} ${mat}_${ver}_${date}_未转曲.ai`;
+}
+
+function copyResult(type) {
+  const text = document.getElementById('r-'+type).textContent;
+  if (text==='—') return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('btn-'+type);
+    const orig = btn.textContent;
+    btn.textContent = '已复制 ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent=orig; btn.classList.remove('copied'); }, 1800);
+    showToast('已复制到剪贴板');
+  });
+}
+
+function selectText(el) {
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ─── EXPORT / IMPORT ─── */
+const TOOL_VERSION = '1.1';
+
+function exportData() {
+  if (!projects.length) { showToast('暂无项目可导出'); return; }
+  const payload = {
+    _tool: '设计工作台',
+    _version: TOOL_VERSION,
+    _exported: new Date().toISOString(),
+    projects
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  const dateStr = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  a.href = url;
+  a.download = `设计工作台备份_${dateStr}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`已导出 ${projects.length} 个项目`);
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      // Support both wrapped format and raw array
+      const incoming = Array.isArray(data) ? data : (data.projects || []);
+      if (!incoming.length) { showToast('文件中没有项目数据'); return; }
+
+      const choice = projects.length
+        ? confirm(`当前已有 ${projects.length} 个项目。
+
+点击「确定」合并导入（保留现有 + 导入新的）
+点击「取消」覆盖导入（替换为文件中的数据）`)
+        : false; // no existing projects → just replace
+
+      if (choice) {
+        // Merge: skip duplicates by name+date
+        const existing = new Set(projects.map(p => p.name + '|' + p.date));
+        let added = 0;
+        incoming.forEach(p => {
+          const key = p.name + '|' + p.date;
+          if (!existing.has(key)) { projects.push(p); added++; }
+        });
+        showToast(`已合并导入 ${added} 个新项目`);
+      } else {
+        projects = incoming;
+        showToast(`已导入 ${projects.length} 个项目`);
+      }
+      save();
+      renderProjects();
+    } catch {
+      showToast('文件格式有误，请选择正确的备份文件');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/* ─── INIT ─── */
+document.getElementById('g-date').value = todayStr();
+genName();
+renderProjects();
+</script>
+</body>
+</html>
