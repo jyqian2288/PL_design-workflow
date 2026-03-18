@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>设计工作台 v2.0</title>
+<title>设计工作台 v2.1</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -451,7 +451,7 @@
         <div class="app-sub" style="display:flex;align-items:center;gap:6px">
           <div class="sync-dot" id="sync-dot"></div>
           <span id="sync-label">已同步</span>
-          · <span style="color:var(--green)">v2.0</span>
+          · <span style="color:var(--green)">v2.1</span>
         </div>
       </div>
       <div class="header-right">
@@ -960,17 +960,41 @@ function escHtml(s) {
 document.getElementById('g-date').value = todayStr();
 genName();
 
-sb.auth.onAuthStateChange(async (event, session) => {
+// 先确保界面初始状态正确，避免闪烁
+document.getElementById('auth-screen').style.display = 'none';
+document.getElementById('main-app').style.display = 'none';
+
+async function showApp(user) {
+  currentUser = user;
+  document.getElementById('user-email-badge').textContent = user.email;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  await loadProjects();
+}
+
+function showAuth() {
+  currentUser = null;
+  projects = [];
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+// 页面加载时先检查是否有已登录的 session
+sb.auth.getSession().then(({ data: { session } }) => {
   if (session?.user) {
-    currentUser = session.user;
-    document.getElementById('user-email-badge').textContent = currentUser.email;
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    await loadProjects();
+    showApp(session.user);
   } else {
-    currentUser = null;
-    document.getElementById('main-app').style.display = 'none';
-    document.getElementById('auth-screen').style.display = 'flex';
+    showAuth();
+  }
+});
+
+// 监听后续登录/登出状态变化
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session?.user) {
+    // 只在真正登录事件时响应，避免页面加载时重复触发
+    if (!currentUser) showApp(session.user);
+  } else if (event === 'SIGNED_OUT') {
+    showAuth();
   }
 });
 </script>
