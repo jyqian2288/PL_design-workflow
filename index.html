@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>设计工作台 v2.1</title>
+<title>设计工作台 v2.4</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -221,7 +221,20 @@
   .hdr-btn:hover { background: var(--surface2); color: var(--text); }
   .hdr-btn.danger:hover { background: var(--red-bg); color: var(--red-text); border-color: transparent; }
 
-  /* ── TABS ── */
+  /* ── CITY ACCORDION ── */
+const cityOpen = { bj: false, sh: false, cz: false };
+
+function toggleCity(id) {
+  cityOpen[id] = !cityOpen[id];
+  const body = document.getElementById('body-' + id);
+  const chev = document.getElementById('chev-' + id);
+  const block = document.getElementById('city-' + id);
+  body.classList.toggle('open', cityOpen[id]);
+  chev.classList.toggle('open', cityOpen[id]);
+  block.classList.toggle('open', cityOpen[id]);
+}
+
+/* ── TABS ── */
   .tab-bar {
     display: flex;
     gap: 2px;
@@ -403,23 +416,300 @@
   .chip-green { background: var(--green-bg); color: var(--green-text); }
   .export-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
 
-  /* ── TOAST ── */
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(8px); background: var(--text); color: var(--surface); font-size: 13px; font-weight: 500; padding: 8px 18px; border-radius: 20px; opacity: 0; transition: all .2s; pointer-events: none; z-index: 999; white-space: nowrap; }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ── SYNC INDICATOR ── */
-  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; transition: background .3s; }
-  .sync-dot.syncing { background: var(--amber); animation: pulse .8s ease-in-out infinite; }
-  .sync-dot.error { background: var(--red); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  /* ── ABOUT TAB ── */
+  .about-hero {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 20px 20px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .about-hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green), var(--blue), var(--purple));
+  }
+  .about-team-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .about-team-sub {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+  .about-tagline {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+    padding: 12px 14px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--green);
+    font-style: italic;
+  }
+  .mission-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .mission-item {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .mission-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .mission-text {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .flow-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .flow-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin-top: 4px;
+  }
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 4px;
+  }
+  .flow-step-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+  .flow-arrow {
+    color: var(--text3);
+    font-size: 11px;
+    margin: 0 2px;
+  }
+  .info-section {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .info-section-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--surface2);
+  }
+  .info-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .city-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .city-bj { background: var(--red-bg); color: var(--red-text); }
+  .city-cz { background: var(--blue-bg); color: var(--blue-text); }
+  .city-sh { background: var(--green-bg); color: var(--green-text); }
+  .info-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px 16px;
+    border-bottom: 0.5px solid var(--border);
+    gap: 12px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row-label {
+    font-size: 11px;
+    color: var(--text3);
+    flex-shrink: 0;
+    width: 68px;
+    padding-top: 1px;
+    line-height: 1.6;
+  }
+  .info-row-value {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.7;
+    flex: 1;
+    font-family: -apple-system, 'PingFang SC', sans-serif;
+  }
+  .copy-field-btn {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    border: 0.5px solid var(--border-md);
+    border-radius: 6px;
+    background: none;
+    color: var(--text3);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+    align-self: flex-start;
+    margin-top: 1px;
+    white-space: nowrap;
+  }
+  .copy-field-btn:hover { background: var(--surface2); color: var(--text); }
+  .copy-field-btn.copied { background: var(--green-bg); color: var(--green-text); border-color: transparent; }
+  .copy-all-btn {
+    padding: 7px 14px;
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-sm);
+    background: var(--surface2);
+    color: var(--text2);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .copy-all-btn:hover { background: var(--surface); color: var(--text); }
+  .copy-all-btn.copied { background: var(--green-bg); color: var(--green-text); border-color: transparent; }
+
+
+  /* ── CITY ACCORDION ── */
+  .city-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .city-block {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: box-shadow .15s;
+  }
+  .city-block.open {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  .city-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background .12s;
+    user-select: none;
+  }
+  .city-row:hover { background: var(--surface2); }
+  .city-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .city-initial {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+    letter-spacing: -0.5px;
+  }
+  .bj-color { background: var(--red-bg); color: var(--red-text); }
+  .sh-color { background: var(--green-bg); color: var(--green-text); }
+  .cz-color { background: var(--blue-bg); color: var(--blue-text); }
+  .city-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .city-hint {
+    font-size: 11px;
+    color: var(--text3);
+  }
+  .city-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .city-copy-all {
+    padding: 5px 12px;
+    border: 0.5px solid var(--border-md);
+    border-radius: 20px;
+    background: none;
+    color: var(--text2);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .city-copy-all:hover { background: var(--surface2); color: var(--text); }
+  .city-copy-all.copied { background: var(--green-bg); color: var(--green-text); border-color: transparent; }
+  .city-chevron {
+    font-size: 16px;
+    color: var(--text3);
+    transition: transform .22s ease;
+    display: inline-block;
+    width: 16px;
+    text-align: center;
+  }
+  .city-chevron.open { transform: rotate(90deg); }
+  .city-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .3s ease;
+  }
+  .city-body.open { max-height: 600px; }
+  .city-body-inner {
+    border-top: 0.5px solid var(--border);
+    padding-bottom: 4px;
+  }
+  .city-sub-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text3);
+    padding: 10px 16px 6px;
+  }
 
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 3px; }
 </style>
-</head>
-<body>
-
 <!-- ══ AUTH SCREEN ══ -->
 <div id="auth-screen">
   <div class="auth-box">
@@ -451,7 +741,7 @@
         <div class="app-sub" style="display:flex;align-items:center;gap:6px">
           <div class="sync-dot" id="sync-dot"></div>
           <span id="sync-label">已同步</span>
-          · <span style="color:var(--green)">v2.1</span>
+          · <span style="color:var(--green)">v2.4</span>
         </div>
       </div>
       <div class="header-right">
@@ -463,6 +753,7 @@
     <div class="tab-bar">
       <button class="tab active" onclick="switchTab('projects')">项目跟踪</button>
       <button class="tab" onclick="switchTab('naming')">命名 & 导出</button>
+      <button class="tab" onclick="switchTab('about')">关于</button>
     </div>
 
     <!-- PROJECTS TAB -->
@@ -564,8 +855,231 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- ABOUT TAB -->
+    <div id="tab-about" class="tab-content">
+
+      <!-- Hero -->
+      <div class="about-hero">
+        <div class="about-team-name">PACKING LAB 包装实验室</div>
+        <div class="about-team-sub">Design Center · Segway-Ninebot</div>
+        <div class="about-tagline">是一个有 Sense 且装 B 的团队，但绝不随便装 B~</div>
+      </div>
+
+      <!-- 使命愿景价值观 -->
+      <div class="mission-grid">
+        <div class="mission-item">
+          <div class="mission-label">使命</div>
+          <div class="mission-text">为产品穿对衣服</div>
+        </div>
+        <div class="mission-item">
+          <div class="mission-label">愿景</div>
+          <div class="mission-text">打造令人振奋且印象深刻的包装符号</div>
+        </div>
+        <div class="mission-item" style="grid-column:1/-1">
+          <div class="mission-label">价值观</div>
+          <div class="mission-text">致力于为用户提供真正有价值的信息</div>
+        </div>
+        <div class="mission-item" style="grid-column:1/-1">
+          <div class="mission-label">目标</div>
+          <div class="mission-text" style="font-weight:400;color:var(--text2)">
+            创新为本：追求卓越的包装设计<br>
+            用户为先：追求极致的包装体验
+          </div>
+        </div>
+      </div>
+
+      <!-- 设计流程 -->
+      <div class="flow-card">
+        <div class="card-title">PD 设计流程</div>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-step-dot"></div>需求接收</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-dot"></div>风格看板</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-dot"></div>设计策略</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-dot"></div>平面设计</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-dot"></div>图素渲染</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-dot"></div>提案评审</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-dot"></div>图纸校对</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-dot"></div>封样审核</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-dot"></div>锁定下发</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-dot"></div>项目复盘</div>
+        </div>
+      </div>
+
+      <!-- 城市信息 accordion -->
+      <div class="city-accordion">
+
+        <!-- 北京 -->
+        <div class="city-block" id="city-bj">
+          <div class="city-row" onclick="toggleCity('bj')">
+            <div class="city-left">
+              <div class="city-initial bj-color">京</div>
+              <div>
+                <div class="city-name">北京</div>
+                <div class="city-hint">发票信息 · 寄送地址</div>
+              </div>
+            </div>
+            <div class="city-right">
+              <button class="city-copy-all" onclick="event.stopPropagation();copyBlock('bj-inv',this)">复制发票</button>
+              <span class="city-chevron" id="chev-bj">›</span>
+            </div>
+          </div>
+          <div class="city-body" id="body-bj">
+            <div class="city-body-inner">
+              <div class="city-sub-title">发票信息</div>
+              <div id="bj-inv">
+                <div class="info-row">
+                  <div class="info-row-label">名称</div>
+                  <div class="info-row-value">纳恩博（北京）科技有限公司</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'纳恩博（北京）科技有限公司')">复制</button>
+                </div>
+                <div class="info-row">
+                  <div class="info-row-label">税号</div>
+                  <div class="info-row-value">911101083295314484</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'911101083295314484')">复制</button>
+                </div>
+                <div class="info-row">
+                  <div class="info-row-label">地址电话</div>
+                  <div class="info-row-value">北京市海淀区西小口路66号中关村东升科技园北领地A-1楼1层103、105室，010-84828002</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'北京市海淀区西小口路66号中关村东升科技园北领地A-1楼1层103、105室，010-84828002')">复制</button>
+                </div>
+                <div class="info-row">
+                  <div class="info-row-label">开户行</div>
+                  <div class="info-row-value">中国工商银行股份有限公司北京西单支行</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'中国工商银行股份有限公司北京西单支行')">复制</button>
+                </div>
+                <div class="info-row">
+                  <div class="info-row-label">账号</div>
+                  <div class="info-row-value">911101083295314484</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'0200210319200080886')">复制</button>
+                </div>
+              </div>
+              <div class="city-sub-title" style="margin-top:14px">寄送地址</div>
+              <div class="info-row" style="border-bottom:none">
+                <div class="info-row-label">地址</div>
+                <div class="info-row-value">北京市海淀区西小口路66号中关村东升科技园 B6 楼 A 座 7层 九号公司快递架</div>
+                <button class="copy-field-btn" onclick="copyField(this,'北京市海淀区西小口路66号中关村东升科技园 B6 楼 A 座 7层 九号公司快递架')">复制</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 上海 -->
+        <div class="city-block" id="city-sh">
+          <div class="city-row" onclick="toggleCity('sh')">
+            <div class="city-left">
+              <div class="city-initial sh-color">沪</div>
+              <div>
+                <div class="city-name">上海</div>
+                <div class="city-hint">发票信息</div>
+              </div>
+            </div>
+            <div class="city-right">
+              <button class="city-copy-all" onclick="event.stopPropagation();copyBlock('sh-inv',this)">复制发票</button>
+              <span class="city-chevron" id="chev-sh">›</span>
+            </div>
+          </div>
+          <div class="city-body" id="body-sh">
+            <div class="city-body-inner">
+              <div class="city-sub-title">发票信息</div>
+              <div id="sh-inv">
+                <div class="info-row">
+                  <div class="info-row-label">名称</div>
+                  <div class="info-row-value">纳恩博（上海）科技有限公司</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'纳恩博（上海）科技有限公司')">复制</button>
+                </div>
+                <div class="info-row">
+                  <div class="info-row-label">税号</div>
+                  <div class="info-row-value">91310104MAD5LPUU4X</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'91310104MAD5LPUU4X')">复制</button>
+                </div>
+                <div class="info-row">
+                  <div class="info-row-label">地址</div>
+                  <div class="info-row-value">上海市徐汇区桂平路353号5号楼101单元</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'上海市徐汇区桂平路353号5号楼101单元')">复制</button>
+                </div>
+                <div class="info-row">
+                  <div class="info-row-label">开户行</div>
+                  <div class="info-row-value">招商银行股份有限公司上海宜山支行</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'招商银行股份有限公司上海宜山支行')">复制</button>
+                </div>
+                <div class="info-row" style="border-bottom:none">
+                  <div class="info-row-label">账号</div>
+                  <div class="info-row-value">121952170410000</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'121952170410000')">复制</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 常州 -->
+        <div class="city-block" id="city-cz">
+          <div class="city-row" onclick="toggleCity('cz')">
+            <div class="city-left">
+              <div class="city-initial cz-color">常</div>
+              <div>
+                <div class="city-name">常州</div>
+                <div class="city-hint">发票信息 · 寄送地址</div>
+              </div>
+            </div>
+            <div class="city-right">
+              <button class="city-copy-all" onclick="event.stopPropagation();copyBlock('cz-inv',this)">复制发票</button>
+              <span class="city-chevron" id="chev-cz">›</span>
+            </div>
+          </div>
+          <div class="city-body" id="body-cz">
+            <div class="city-body-inner">
+              <div class="city-sub-title">发票信息</div>
+              <div id="cz-inv">
+                <div class="info-row">
+                  <div class="info-row-label">名称</div>
+                  <div class="info-row-value">纳恩博（常州）科技有限公司</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'纳恩博（常州）科技有限公司')">复制</button>
+                </div>
+                <div class="info-row">
+                  <div class="info-row-label">税号</div>
+                  <div class="info-row-value">91320412314183700U</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'91320412314183700U')">复制</button>
+                </div>
+                <div class="info-row">
+                  <div class="info-row-label">地址电话</div>
+                  <div class="info-row-value">常州市武进区常武中路18号常州科教城创研港3号楼A座16、17层，0519-69657952</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'常州市武进区常武中路18号常州科教城创研港3号楼A座16、17层，0519-69657952')">复制</button>
+                </div>
+                <div class="info-row">
+                  <div class="info-row-label">开户行</div>
+                  <div class="info-row-value">中国银行常州天宁支行营业部</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'中国银行常州天宁支行营业部')">复制</button>
+                </div>
+                <div class="info-row" style="border-bottom:none">
+                  <div class="info-row-label">账号</div>
+                  <div class="info-row-value">488478037265</div>
+                  <button class="copy-field-btn" onclick="copyField(this,'488478037265')">复制</button>
+                </div>
+              </div>
+              <div class="city-sub-title" style="margin-top:14px">寄送地址</div>
+              <div class="info-row" style="border-bottom:none">
+                <div class="info-row-label">地址</div>
+                <div class="info-row-value">常州市武进区湖塘镇常武中路18-86号纳恩博科技有限公司西门</div>
+                <button class="copy-field-btn" onclick="copyField(this,'常州市武进区湖塘镇常武中路18-86号纳恩博科技有限公司西门')">复制</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
 
 <div class="toast" id="toast"></div>
 
@@ -707,6 +1221,11 @@ async function signOut() {
 
 /* ── DATA LAYER ── */
 async function loadProjects() {
+  if (IS_PREVIEW) {
+    projects = JSON.parse(localStorage.getItem('dc_wf_preview_projects') || '[]');
+    renderProjects();
+    return;
+  }
   setProjectsLoading(true);
   const { data, error } = await sb.from('projects')
     .select('*')
@@ -724,6 +1243,11 @@ async function loadProjects() {
 }
 
 async function saveProject(idx) {
+  if (IS_PREVIEW) {
+    localStorage.setItem('dc_wf_preview_projects', JSON.stringify(projects));
+    setSyncState('ok');
+    return;
+  }
   const p = projects[idx];
   setSyncState('syncing');
   try {
@@ -749,7 +1273,7 @@ async function saveProject(idx) {
 }
 
 async function deleteProjectRemote(id) {
-  if (!id) return;
+  if (IS_PREVIEW || !id) return;
   await sb.from('projects').delete().eq('id', id);
 }
 
@@ -912,11 +1436,62 @@ function saveNote(stageId, val) {
   scheduleSave(currentIdx);
 }
 
+/* ── COPY HELPERS ── */
+function copyField(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '已复制 ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1800);
+    showToast('已复制');
+  });
+}
+
+function copyBlock(blockId, btn) {
+  const rows = document.querySelectorAll('#' + blockId + ' .info-row');
+  const lines = [];
+  rows.forEach(row => {
+    const label = row.querySelector('.info-row-label')?.textContent.trim() || '';
+    const value = row.querySelector('.info-row-value')?.textContent.trim() || '';
+    lines.push(label + '：' + value);
+  });
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '已复制 ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+    showToast('发票信息已复制');
+  });
+}
+
+/* ── CITY ACCORDION ── */
+const cityOpen = { bj: false, sh: false, cz: false };
+
+function toggleCity(id) {
+  cityOpen[id] = !cityOpen[id];
+  const body = document.getElementById('body-' + id);
+  const chev = document.getElementById('chev-' + id);
+  const block = document.getElementById('city-' + id);
+  body.classList.toggle('open', cityOpen[id]);
+  chev.classList.toggle('open', cityOpen[id]);
+  block.classList.toggle('open', cityOpen[id]);
+}
+
 /* ── TABS ── */
 function switchTab(name) {
-  document.querySelectorAll('#main-app .tab').forEach((t,i) => t.classList.toggle('active', ['projects','naming'][i] === name));
+  document.querySelectorAll('#main-app .tab').forEach((t,i) => t.classList.toggle('active', ['projects','naming','about'][i] === name));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
+}
+
+function copyField(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '已复制';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1800);
+  });
 }
 
 /* ── NAMING ── */
@@ -956,6 +1531,13 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+/* ── PREVIEW MODE (no login needed when opened locally or in Claude) ── */
+const IS_PREVIEW = !window.location.hostname || 
+                   window.location.hostname === 'localhost' ||
+                   window.location.protocol === 'blob:' ||
+                   window.location.hostname.includes('claude.ai') ||
+                   window.location.hostname.includes('anthropic');
+
 /* ── BOOT ── */
 document.getElementById('g-date').value = todayStr();
 genName();
@@ -975,8 +1557,23 @@ async function showApp(user) {
 function showAuth() {
   currentUser = null;
   projects = [];
-  document.getElementById('main-app').style.display = 'none';
-  document.getElementById('auth-screen').style.display = 'flex';
+  if (IS_PREVIEW) {
+    // Preview mode: skip login, use localStorage
+    enterPreviewMode();
+  } else {
+    document.getElementById('main-app').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+}
+
+function enterPreviewMode() {
+  currentUser = { id: 'preview', email: '预览模式（本地）' };
+  document.getElementById('user-email-badge').textContent = '预览模式';
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  // Load from localStorage in preview mode
+  projects = JSON.parse(localStorage.getItem('dc_wf_preview_projects') || '[]');
+  renderProjects();
 }
 
 // 页面加载时先检查是否有已登录的 session
